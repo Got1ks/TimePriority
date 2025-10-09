@@ -6,12 +6,15 @@
 
 require('dotenv').config();
 const express = require('express');
+const cors = require('cors');
 const nodemailer = require('nodemailer');
-const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-app.use(bodyParser.json());
+// allow cross-origin requests (in production, restrict origin)
+app.use(cors());
+// parse JSON bodies
+app.use(express.json());
 app.use(express.static(path.join(__dirname, '.'))); // serve static files optionally
 
 // Create a Nodemailer transporter using SMTP (Hostinger example)
@@ -38,7 +41,7 @@ transporter.verify().then(() => {
 app.post('/api/subscribe', async (req, res) => {
   try {
     const { plan, fname, lname, email, phone } = req.body || {};
-    if(!plan || !fname || !lname || !email) return res.status(400).json({ error: 'Missing required fields' });
+  if(!plan || !fname || !lname || !email) return res.status(400).json({ ok: false, error: 'Missing required fields' });
 
     // Compose the email body - plain text for now
     const subject = `TimePriority — Subscription received: ${plan}`;
@@ -75,12 +78,15 @@ app.post('/api/subscribe', async (req, res) => {
       transporter.sendMail(adminMail).catch(err => console.warn('Failed to send admin notification', err.message));
     }
 
-    return res.json({ ok: true });
+    return res.json({ ok: true, message: 'E-pasts nosūtīts klientam.' });
   } catch (err) {
     console.error('Error in /api/subscribe', err);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ ok: false, error: 'Internal server error' });
   }
 });
+
+// Fallback 404 handler - return JSON so client JSON.parse won't fail
+app.use((req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
