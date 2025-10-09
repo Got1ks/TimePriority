@@ -202,7 +202,7 @@
     const submitBtn = document.getElementById('submitBtn');
     agree.addEventListener('change', ()=>{ submitBtn.disabled = !agree.checked; });
 
-    document.getElementById('subForm').addEventListener('submit', function(e){
+    document.getElementById('subForm').addEventListener('submit', async function(e){
       e.preventDefault();
       // basic validation
       const f = document.getElementById('fname').value.trim();
@@ -218,10 +218,34 @@
         document.getElementById('contractText').scrollIntoView({behavior:'smooth'});
         return;
       }
-      // show success
-      document.getElementById('subForm').style.display='none';
-      document.getElementById('success').style.display='block';
-      // optionally send data to server using fetch() -- omitted
+
+      // Prepare payload
+      const payload = {
+        plan: document.getElementById('plan').value || '',
+        fname: f,
+        lname: l,
+        phone: p,
+        email: em
+      };
+
+      // POST to local server (Node.js + Express) which will send email via SMTP
+      try{
+        const resp = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if(resp.ok && data.ok){
+          document.getElementById('subForm').style.display='none';
+          document.getElementById('success').style.display='block';
+        } else {
+          alert('Failed to send subscription: ' + (data.error || resp.statusText));
+        }
+      }catch(err){
+        console.error('Subscribe request failed', err);
+        alert('Request failed: ' + err.message);
+      }
     });
   </script>
 </body>
