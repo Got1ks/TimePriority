@@ -13,6 +13,12 @@
   .terms{margin-top:12px;border:1px solid rgba(255,255,255,.04);background:#0d0d0e;padding:10px;border-radius:8px}
   .terms .text{max-height:120px;overflow:auto;padding:6px;font-size:13px;color:#cfcfcf;background:linear-gradient(180deg,transparent,rgba(0,0,0,.02))}
   .terms label{display:inline-flex;align-items:center;gap:8px;margin-top:10px}
+  .agree-text{color:#cfcfcf;font-size:13px;line-height:1.2}
+  @media (max-width:480px){
+    .card{width:320px;padding:18px}
+    .agree-text{font-size:15px;color:#ffffff}
+    .terms .text{font-size:14px}
+  }
   .btn{display:inline-block;margin-top:14px;padding:10px 14px;border-radius:8px;background:#d4af37;color:#0b0b0d;font-weight:700;text-decoration:none;border:none;cursor:pointer}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
     .muted{font-size:13px;color:#b9b9bd;margin-top:8px}
@@ -44,7 +50,7 @@
           <p>By subscribing to this service you agree to the terms and conditions of TimePriority. You authorize TimePriority to contact you and to coordinate the provision of services. Specific service provider fees may apply and will be discussed separately.</p>
           <p>This is placeholder text — replace with your full contract.</p>
         </div>
-        <label><input type="checkbox" id="agree" /> I agree to the terms and conditions</label>
+  <label><input type="checkbox" id="agree" /><span class="agree-text">I agree to the terms and conditions</span></label>
       </div>
       <button class="btn" id="submitBtn" type="submit" disabled>Submit</button>
     </form>
@@ -170,7 +176,8 @@
   // if contractText looks like plain text (no tags), wrap it in <p>
   if(!/[<>]/.test(contractHtml.trim())) contractHtml = '<p>'+contractHtml+'</p>';
   document.getElementById('contractText').innerHTML = contractHtml;
-    document.querySelector('.terms label').childNodes[1].textContent = ' ' + T.agreeText;
+    const agreeTextEl = document.querySelector('.terms .agree-text');
+    if(agreeTextEl) agreeTextEl.textContent = T.agreeText;
     document.getElementById('submitBtn').innerText = T.submit;
     document.getElementById('success').querySelector('div').innerText = T.successTitle;
     document.getElementById('success').querySelector('.muted').innerText = T.successDesc;
