@@ -164,8 +164,8 @@
     const lang = (localStorage && localStorage.getItem && localStorage.getItem('tp_lang')) || 'lv';
     const T = i18n[lang] || i18n.lv;
 
-  // API base (change to your production URL when deploying)
-  const API_BASE = 'http://localhost:3000';
+  // API base - replace with your deployed public API URL (example: https://api.timepriority.lv)
+  const API_BASE = 'https://api.timepriority.lv';
 
     // apply translations
     document.getElementById('form-title').innerText = T.subscribe + (location.search.includes('plan=') ? ' — ' + decodeURIComponent(new URLSearchParams(location.search).get('plan')) : '');

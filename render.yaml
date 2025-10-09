@@ -1,0 +1,21 @@
+# Render service configuration for TimePriority subscription API
+# Documentation: https://render.com/docs/render-yaml
+services:
+  - type: web
+    name: timepriority-api
+    env: node
+    plan: starter
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    repo: ""
+    branch: main
+    envVars:
+      - key: SMTP_HOST
+      - key: SMTP_PORT
+      - key: SMTP_USER
+      - key: SMTP_PASS
+      - key: FROM_EMAIL
+      - key: BUSINESS_EMAIL
+      - key: ALLOWED_ORIGINS
+      - key: PORT
