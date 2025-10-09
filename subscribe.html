@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Subscribe</title>
+  <style>
+    body{font-family:Arial,Helvetica,sans-serif;background:#0b0b0d;color:#f1f1f1;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+    .card{background:#111;padding:24px;border-radius:12px;width:360px;box-shadow:0 6px 30px rgba(0,0,0,.6)}
+    h2{margin:0 0 10px}
+  label{display:block;margin-top:8px;font-size:13px;color:#cfcfcf}
+  input{width:100%;padding:10px;border-radius:8px;border:1px solid #2a2a2a;background:#0e0e0f;color:#fff;margin-top:6px}
+  .terms{margin-top:12px;border:1px solid rgba(255,255,255,.04);background:#0d0d0e;padding:10px;border-radius:8px}
+  .terms .text{max-height:120px;overflow:auto;padding:6px;font-size:13px;color:#cfcfcf;background:linear-gradient(180deg,transparent,rgba(0,0,0,.02))}
+  .terms label{display:inline-flex;align-items:center;gap:8px;margin-top:10px}
+  .btn{display:inline-block;margin-top:14px;padding:10px 14px;border-radius:8px;background:#d4af37;color:#0b0b0d;font-weight:700;text-decoration:none;border:none;cursor:pointer}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+    .muted{font-size:13px;color:#b9b9bd;margin-top:8px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 id="form-title">Subscribe</h2>
+    <form id="subForm">
+      <label>Plan</label>
+      <input type="text" id="plan" name="plan" readonly />
+
+      <label for="fname">First name</label>
+      <input id="fname" name="fname" required />
+
+      <label for="lname">Last name</label>
+      <input id="lname" name="lname" required />
+
+      <label for="phone">Phone number</label>
+      <input id="phone" name="phone" required />
+
+      <label for="email">E-mail</label>
+      <input id="email" name="email" type="email" required />
+
+      <div class="terms">
+        <div class="text" id="contractText">
+          <!-- Placeholder contract text -->
+          <p><strong>Agreement and Terms</strong></p>
+          <p>By subscribing to this service you agree to the terms and conditions of TimePriority. You authorize TimePriority to contact you and to coordinate the provision of services. Specific service provider fees may apply and will be discussed separately.</p>
+          <p>This is placeholder text — replace with your full contract.</p>
+        </div>
+        <label><input type="checkbox" id="agree" /> I agree to the terms and conditions</label>
+      </div>
+      <button class="btn" id="submitBtn" type="submit" disabled>Submit</button>
+    </form>
+    <div id="success" style="display:none;margin-top:12px">
+      <div style="font-weight:700;color:#7df19b">Thank you — your subscription request has been received.</div>
+      <div class="muted">We will contact you shortly.</div>
+    </div>
+  </div>
+
+  <script>
+    // Translations for subscribe form
+    const i18n = {
+      ru: {
+        subscribe: 'Подписка',
+        plan: 'План',
+        fname: 'Имя',
+        lname: 'Фамилия',
+        phone: 'Номер телефона',
+        email: 'E-mail',
+        agreeText: 'Я согласен с условиями и договором',
+        submit: 'Отправить',
+        successTitle: 'Спасибо — ваша заявка принята.',
+        successDesc: 'Мы свяжемся с вами в ближайшее время.',
+        contractTitle: 'Договор-оферта о предоставлении услуг TimePriority SIA',
+        contractText: `
+          <p>1. Общие положения</p>
+          <p>1.1. Настоящий документ является публичной офертой компании TimePriority SIA, зарегистрированной в Латвийской Республике, на оказание услуг по организации и координации поручений клиентов.</p>
+          <p>1.2. Принятие условий осуществляется путем нажатия кнопки «Согласен с условиями и договором», что приравнивается к подписанию договора в письменной форме.</p>
+          <p>2. Предмет договора</p>
+          <p>2.1. TimePriority SIA предоставляет Клиенту персонализированные услуги по организации, контролю и исполнению поручений, связанных с бытовыми, деловыми и личными задачами.</p>
+          <p>2.2. Клиент получает доступ к услугам на основании выбранного пакета и может направлять поручения в любое время в рамках активного обслуживания.</p>
+          <p>3. Порядок расчетов</p>
+          <p>3.1. Оплата за выбранный пакет производится ежемесячно в размере, установленном тарифом.</p>
+          <p>3.2. Дополнительные расходы, связанные с выполнением конкретных поручений (транспорт, доставка, закупки и др.), оплачиваются отдельно Клиентом на основании выставленного счета.</p>
+          <p>3.3. Все расчёты осуществляются исключительно через TimePriority SIA. Любые наличные или прямые переводы исполнителю без уведомления компании считаются нарушением договора.</p>
+          <p>3.4. В случае задержки оплаты компания вправе временно приостановить выполнение поручений до полного расчета.</p>
+          <p>4. Исполнение поручений</p>
+          <p>4.1. Поручения Клиента выполняются сотрудниками или партнерами TimePriority SIA.</p>
+          <p>4.2. Компания выступает координатором, обеспечивая качество, конфиденциальность и контроль исполнения.</p>
+          <p>4.3. Клиент подтверждает, что отдельные поручения могут выполняться сторонними исполнителями, действующими по поручению компании.</p>
+          <p>5. Ответственность сторон</p>
+          <p>5.1. TimePriority SIA не несет ответственности за задержки или невыполнение поручений по причинам, не зависящим от компании.</p>
+          <p>5.2. Клиент обязуется предоставлять достоверную информацию и своевременно оплачивать все счета.</p>
+          <p>5.3. В случае нарушения условий договора компания вправе прекратить обслуживание без возврата оплаты за текущий период.</p>
+          <p>6. Конфиденциальность</p>
+          <p>6.1. Вся информация, полученная от Клиента, является строго конфиденциальной и не подлежит разглашению третьим лицам без согласия Клиента.</p>
+          <p>6.2. Исключение составляет предоставление информации по требованию государственных органов в соответствии с законом.</p>
+          <p>7. Заключительные положения</p>
+          <p>7.1. Договор вступает в силу с момента подтверждения согласия Клиентом и действует до момента прекращения обслуживания.</p>
+          <p>7.2. Подтверждение согласия с условиями означает, что Клиент ознакомлен с содержанием договора, полностью его понимает и принимает.</p>
+          <p> Нажимая кнопку “Согласен с условиями и договором”, Клиент подтверждает, что принимает все положения настоящего договора и обязуется их соблюдать.</p>
+        `
+      },
+      lv: {
+        subscribe: 'Abonēšana',
+        plan: 'Plāns',
+        fname: 'Vārds',
+        lname: 'Uzvārds',
+        phone: 'Telefona numurs',
+        email: 'E-pasts',
+        agreeText: 'Es piekrītu noteikumiem un līgumam',
+        submit: 'Sūtīt',
+        successTitle: 'Paldies — jūsu pieteikums saņemts.',
+        successDesc: 'Mēs ar jums sazināsimies drīzumā.',
+        contractTitle: 'Līgums un noteikumi',
+        contractText: `
+          <p>1. Vispārīgi noteikumi</p>
+          <p>1.1. Šis dokuments ir TimePriority SIA publiskais līgums (oferta) par pakalpojumu sniegšanu. Līguma pieņemšana notiek, atzīmējot piekrišanas rūtiņu "Es piekrītu noteikumiem un līgumam".</p>
+          <p>2. Pakalpojuma priekšmets</p>
+          <p>2.1. TimePriority organizē un koordinē Klienta uzdevumu izpildi, nodrošinot projektu vadību, komunikāciju ar izpildītājiem un kvalitātes kontroli.</p>
+          <p>3. Maksājumi un izmaksas</p>
+          <p>3.1. Klients apmaksā izvēlēto abonementa paketi saskaņā ar norādītajiem tarifiem. Papildu izmaksas (piem., piegāde, materiāli, trešo personu pakalpojumi) tiek segtas atsevišķi.</p>
+          <p>4. Atbildība</p>
+          <p>4.1. TimePriority neveic tiešu atbildību par trešo pušu rīcību; tomēr nodrošina koordināciju un pārbaudi. Klientam jāsniedz precīza informācija un jāievēro maksājumu noteikumi.</p>
+          <p>5. Konfidencialitāte</p>
+          <p>5.1. Visa informācija, kas saņemta no Klienta, tiek uzskatīta par konfidenciālu un netiek izpausta trešajām personām bez Klienta piekrišanas, izņemot likumā paredzētos gadījumus.</p>
+          <p>6. Noslēguma noteikumi</p>
+          <p>6.1. Līgums stājas spēkā pēc piekrišanas un turpina darboties līdz pakalpojuma izbeigšanai. Spiežot pogu "Es piekrītu noteikumiem un līgumam", Klients apliecina, ka ir izlasījis un piekrīt visiem šī līguma noteikumiem.</p>
+        `
+      },
+      en: {
+        subscribe: 'Subscribe',
+        plan: 'Plan',
+        fname: 'First name',
+        lname: 'Last name',
+        phone: 'Phone number',
+        email: 'E-mail',
+        agreeText: 'I agree to the terms and contract',
+        submit: 'Submit',
+        successTitle: 'Thank you — your subscription request has been received.',
+        successDesc: 'We will contact you shortly.',
+        contractTitle: 'Agreement and Terms',
+        contractText: `
+          <p>1. General Provisions</p>
+          <p>1.1. This document is a public offer by TimePriority SIA for the provision of services related to organising and coordinating client tasks. Acceptance of the offer is made by checking the "I agree to the terms and contract" box.</p>
+          <p>2. Scope of Services</p>
+          <p>2.1. TimePriority coordinates and arranges services for the Client, including selecting providers, managing communications and monitoring delivery quality.</p>
+          <p>3. Payments</p>
+          <p>3.1. Fees for subscription plans are payable monthly according to the chosen package. Additional expenses incurred in carrying out specific tasks (transportation, purchases, third-party fees) are charged separately.</p>
+          <p>4. Liability</p>
+          <p>4.1. TimePriority shall not be liable for delays or failures caused by circumstances beyond its control. The Client agrees to provide accurate information and to fulfil payment obligations.</p>
+          <p>5. Confidentiality</p>
+          <p>5.1. All information received from the Client is treated as confidential and will not be disclosed to third parties without Client consent, except as required by law.</p>
+          <p>6. Final Provisions</p>
+          <p>6.1. The agreement enters into force upon the Client's acceptance and remains valid until services are terminated. By confirming acceptance, the Client acknowledges understanding and acceptance of all terms.</p>
+        `
+      }
+    };
+
+    // detect language from localStorage (set by main page)
+    const lang = (localStorage && localStorage.getItem && localStorage.getItem('tp_lang')) || 'lv';
+    const T = i18n[lang] || i18n.lv;
+
+    // apply translations
+    document.getElementById('form-title').innerText = T.subscribe + (location.search.includes('plan=') ? ' — ' + decodeURIComponent(new URLSearchParams(location.search).get('plan')) : '');
+    document.querySelector('label[for="fname"]').innerText = T.fname;
+    document.querySelector('label[for="lname"]').innerText = T.lname;
+    document.querySelector('label[for="phone"]').innerText = T.phone;
+    document.querySelector('label[for="email"]').innerText = T.email;
+  // set contract title and HTML (wrap plain text into a paragraph if needed)
+  document.querySelector('.terms strong').innerText = T.contractTitle;
+  let contractHtml = T.contractText || '';
+  // if contractText looks like plain text (no tags), wrap it in <p>
+  if(!/[<>]/.test(contractHtml.trim())) contractHtml = '<p>'+contractHtml+'</p>';
+  document.getElementById('contractText').innerHTML = contractHtml;
+    document.querySelector('.terms label').childNodes[1].textContent = ' ' + T.agreeText;
+    document.getElementById('submitBtn').innerText = T.submit;
+    document.getElementById('success').querySelector('div').innerText = T.successTitle;
+    document.getElementById('success').querySelector('.muted').innerText = T.successDesc;
+
+    // set plan value (and translate known plan names if needed)
+    const params = new URLSearchParams(location.search);
+    let plan = params.get('plan') || '';
+    // map English plan slugs to translated names when necessary
+    if(plan){
+      // attempt to translate common names
+      const map = {
+        'Basic Priority': {'ru':'Basic Priority','lv':'Pamata prioritāte','en':'Basic Priority'},
+        'Prime Priority': {'ru':'Prime Priority','lv':'Prime prioritāte','en':'Prime Priority'},
+        'Exclusive Priority': {'ru':'Exclusive Priority','lv':'Ekskluzīvā prioritāte','en':'Exclusive Priority'}
+      };
+      const mapped = map[plan];
+      if(mapped && mapped[lang]) plan = mapped[lang];
+    }
+    document.getElementById('plan').value = plan;
+
+    const agree = document.getElementById('agree');
+    const submitBtn = document.getElementById('submitBtn');
+    agree.addEventListener('change', ()=>{ submitBtn.disabled = !agree.checked; });
+
+    document.getElementById('subForm').addEventListener('submit', function(e){
+      e.preventDefault();
+      // basic validation
+      const f = document.getElementById('fname').value.trim();
+      const l = document.getElementById('lname').value.trim();
+      const p = document.getElementById('phone').value.trim();
+      const em = document.getElementById('email').value.trim();
+      if(!f || !l || !p || !em){
+        alert(T.submit + ': ' + (lang==='ru'? 'Пожалуйста, заполните все поля' : (lang==='lv'? 'Lūdzu, aizpildiet visus laukus' : 'Please fill all fields')));
+        return;
+      }
+      if(!agree.checked){
+        alert(lang==='ru'? 'Пожалуйста, примите условия и договор' : (lang==='lv'? 'Lūdzu, piekrītiet noteikumiem' : 'Please accept the terms and contract'));
+        document.getElementById('contractText').scrollIntoView({behavior:'smooth'});
+        return;
+      }
+      // show success
+      document.getElementById('subForm').style.display='none';
+      document.getElementById('success').style.display='block';
+      // optionally send data to server using fetch() -- omitted
+    });
+  </script>
+</body>
+</html>
