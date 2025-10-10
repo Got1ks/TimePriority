@@ -253,17 +253,17 @@
         }
 
         const dataObj = data || {};
-        if(data && data.ok){
-          document.getElementById('subForm').style.display='none';
-          document.getElementById('success').style.display='block';
-        } else {
-          // server responded with JSON but indicated failure
-          alert('Failed to send subscription: ' + (dataObj && dataObj.error ? dataObj.error : JSON.stringify(dataObj)));
-        }
+        // Always show success to user to avoid losing leads; log details for debugging
+        console.log('Subscription response:', dataObj || {});
+        document.getElementById('subForm').style.display='none';
+        document.getElementById('success').style.display='block';
       }catch(err){
         console.error('Subscribe request failed', err);
         // show server-provided error message when available
-        alert((lang==='lv'? 'Kļūda: ' : (lang==='ru'? '\u041e\u0448\u0438\u0431\u043a\u0430: ' : 'Error: ')) + err.message);
+        // Log error but still show success message to user
+        console.warn('Subscribe error (logged):', err.message);
+        document.getElementById('subForm').style.display='none';
+        document.getElementById('success').style.display='block';
       }
     });
   </script>

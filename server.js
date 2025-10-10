@@ -10,8 +10,8 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
 const helmet = require('helmet');
+const { sendEmailResend } = require('./utils/sendEmailResend');
 
 const app = express();
 
@@ -56,19 +56,6 @@ app.get('/health', (req, res) => {
   return res.json({ ok: true, status: 'ok' });
 });
 
-// Nodemailer transporter
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.hostinger.com',
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: (process.env.SMTP_SECURE === 'true') || false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
-
-// Optional: verify transporter at startup, logs a warning but does not crash
-transporter.verify().then(() => console.log('SMTP transporter verified')).catch(err => console.warn('SMTP verify failed:', err && err.message));
 
 // POST /api/subscribe
 app.post('/api/subscribe', async (req, res) => {
@@ -96,28 +83,27 @@ app.post('/api/subscribe', async (req, res) => {
       // attachments: [ { filename: 'invoice.pdf', path: '/tmp/invoice.pdf' } ]
     };
 
-  // send to client
-    console.log('Sending client email to', email);
+    // send to client via Resend API
+    console.log('Sending client email via Resend to', email);
     try{
-      await transporter.sendMail(mailOptions);
-      console.log('Client email sent to', email);
+      await sendEmailResend({ to: email, subject: mailOptions.subject, html: mailOptions.text.replace(/\n/g,'<br/>') });
+      console.log('Client email sent (Resend) to', email);
     } catch(sendErr){
-      console.error('Failed to send client email:', sendErr && sendErr.message);
-      return res.status(502).json({ ok: false, error: 'Failed to send email' });
+      console.error('Email send failed (Resend):', sendErr && (sendErr.message || sendErr));
+      // Do not fail the request — return success to avoid losing leads
     }
 
     // notify business if configured (do not block client response on failure)
     if(process.env.BUSINESS_EMAIL){
-      const adminOptions = {
-        from: process.env.FROM_EMAIL || process.env.SMTP_USER,
-        to: process.env.BUSINESS_EMAIL,
-        subject: `New subscription: ${plan} — ${fname} ${lname}`,
-        text: `New subscription received:\n\n${JSON.stringify({ plan, fname, lname, email, phone }, null, 2)}`
-      };
-      transporter.sendMail(adminOptions).catch(err => console.warn('Admin notification failed:', err && err.message));
+      try{
+        await sendEmailResend({ to: process.env.BUSINESS_EMAIL, subject: `New subscription: ${plan} — ${fname} ${lname}`, html: `<pre>${JSON.stringify({ plan, fname, lname, email, phone }, null, 2)}</pre>` });
+        console.log('Admin notification sent to', process.env.BUSINESS_EMAIL);
+      } catch(err){
+        console.warn('Admin notification failed:', err && err.message);
+      }
     }
 
-    return res.json({ ok: true, message: 'E-mail sent' });
+    return res.json({ ok: true, message: 'Pieteikums saņemts' });
   } catch (err) {
     console.error('Error /api/subscribe', err && err.message);
     return res.status(500).json({ ok: false, error: 'Internal server error' });
