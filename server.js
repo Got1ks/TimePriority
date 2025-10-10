@@ -21,8 +21,9 @@ app.use(helmet());
 // Parse JSON bodies
 app.use(express.json());
 
-// Configure CORS: read allowed origins from env var
-const rawOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
+// Configure CORS: read allowed origins from env var (fallback to known production domains)
+const configured = (process.env.ALLOWED_ORIGINS || '').trim();
+const rawOrigins = (configured ? configured.split(',') : ['https://timepriority.lv','https://www.timepriority.lv']).map(s => s.trim()).filter(Boolean);
 const corsOptions = {
   origin: function(origin, callback){
     // allow requests with no origin (e.g., server-to-server or curl)
@@ -42,11 +43,17 @@ app.use((req, res, next) => {
   // wrap cors middleware to return JSON error on CORS failure
   cors(corsOptions)(req, res, function(err){
     if(err){
-      console.warn('CORS denied:', req.headers.origin);
+      console.warn('CORS denied for origin:', req.headers.origin);
       return res.status(403).json({ ok: false, error: 'CORS origin denied' });
     }
     next();
   });
+});
+
+// Health check route - should be reachable and return JSON
+app.get('/health', (req, res) => {
+  console.log('/health ping from', req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress);
+  return res.json({ ok: true, status: 'ok' });
 });
 
 // Nodemailer transporter
@@ -66,6 +73,7 @@ transporter.verify().then(() => console.log('SMTP transporter verified')).catch(
 // POST /api/subscribe
 app.post('/api/subscribe', async (req, res) => {
   try {
+    console.log('/api/subscribe payload:', req.body);
     const { plan, fname, lname, phone, email } = req.body || {};
     if(!plan || !fname || !lname || !email) return res.status(400).json({ ok: false, error: 'Missing required fields' });
 
@@ -88,8 +96,15 @@ app.post('/api/subscribe', async (req, res) => {
       // attachments: [ { filename: 'invoice.pdf', path: '/tmp/invoice.pdf' } ]
     };
 
-    // send to client
-    await transporter.sendMail(mailOptions);
+  // send to client
+    console.log('Sending client email to', email);
+    try{
+      await transporter.sendMail(mailOptions);
+      console.log('Client email sent to', email);
+    } catch(sendErr){
+      console.error('Failed to send client email:', sendErr && sendErr.message);
+      return res.status(502).json({ ok: false, error: 'Failed to send email' });
+    }
 
     // notify business if configured (do not block client response on failure)
     if(process.env.BUSINESS_EMAIL){
@@ -114,6 +129,4 @@ app.use((req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`TimePriority API listening on port ${PORT}`));
-app.get('/health', (req, res) => {
-  res.json({ ok: true, message: 'TimePriority API is alive' });
-});
+
