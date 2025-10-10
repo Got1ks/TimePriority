@@ -114,3 +114,6 @@ app.use((req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`TimePriority API listening on port ${PORT}`));
+app.get('/health', (req, res) => {
+  res.json({ ok: true, message: 'TimePriority API is alive' });
+});
