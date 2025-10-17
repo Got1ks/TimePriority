@@ -436,7 +436,9 @@
 
         // init
   const saved = localStorage.getItem('tp_lang') || 'lv';
-        setText(saved);
+    setText(saved);
+    // Persist the default for first-time visitors so the site shows Latvian on next visits
+    if (!localStorage.getItem('tp_lang')) localStorage.setItem('tp_lang', saved);
 
         // wire buttons
         document.querySelectorAll('.lang-btn').forEach(btn=>{
