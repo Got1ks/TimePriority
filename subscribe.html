@@ -322,7 +322,7 @@
         email: em
       };
 
-      // POST to server (Node.js + Express) which will send email via SMTP
+      // POST to server (Node.js + Express) which sends confirmation email via Resend
       try{
         const resp = await fetch(`${API_BASE}/api/subscribe`, {
           method: 'POST',
@@ -344,17 +344,20 @@
         }
 
         const dataObj = data || {};
-        // Always show success to user to avoid losing leads; log details for debugging
+        if(!dataObj.ok){
+          throw new Error(dataObj.message || 'Email delivery failed');
+        }
         console.log('Subscription response:', dataObj || {});
         document.getElementById('subForm').style.display='none';
         document.getElementById('success').style.display='block';
       }catch(err){
         console.error('Subscribe request failed', err);
-        // show server-provided error message when available
-        // Log error but still show success message to user
-        console.warn('Subscribe error (logged):', err.message);
-        document.getElementById('subForm').style.display='none';
-        document.getElementById('success').style.display='block';
+        const msg = lang==='ru'
+          ? `Ошибка отправки: ${err.message}. Проверьте данные или свяжитесь с нами в Telegram.`
+          : (lang==='lv'
+            ? `Nosūtīšanas kļūda: ${err.message}. Pārbaudiet datus vai sazinieties ar mums Telegram.`
+            : `Submission failed: ${err.message}. Please verify data or contact us on Telegram.`);
+        alert(msg);
       }
     });
   </script>
