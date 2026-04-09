@@ -11,10 +11,7 @@ services:
     repo: ""
     branch: main
     envVars:
-      - key: SMTP_HOST
-      - key: SMTP_PORT
-      - key: SMTP_USER
-      - key: SMTP_PASS
+      - key: RESEND_API_KEY
       - key: FROM_EMAIL
       - key: BUSINESS_EMAIL
       - key: ALLOWED_ORIGINS

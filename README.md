@@ -1,6 +1,6 @@
 # TimePriority - Local Email Server
 
-This repository contains a static frontend (`index.html`, `subscribe.html`) and a minimal Node.js server (`server.js`) to send subscription confirmation emails using SMTP (Hostinger example).
+This repository contains a static frontend (`index.html`, `subscribe.html`) and a minimal Node.js server (`server.js`) to send subscription confirmation emails using Resend API.
 
 ## Setup (local)
 
@@ -8,15 +8,12 @@ This repository contains a static frontend (`index.html`, `subscribe.html`) and 
 
    npm install
 
-2. Copy `.env.example` to `.env` and fill in your SMTP credentials (Hostinger). Example values:
+2. Copy `.env.example` to `.env` and fill in your configuration values. Example:
 
-   SMTP_HOST=smtp.hostinger.com
-   SMTP_PORT=587
-   SMTP_SECURE=false
-   SMTP_USER=info@timepriority.lv
-   SMTP_PASS=your_smtp_password
+   RESEND_API_KEY=re_xxxxxxxxx
    FROM_EMAIL=info@timepriority.lv
    BUSINESS_EMAIL=info@timepriority.lv
+   ALLOWED_ORIGINS=https://timepriority.lv,https://www.timepriority.lv
    PORT=3000
 
 3. Run the server
@@ -29,8 +26,9 @@ This repository contains a static frontend (`index.html`, `subscribe.html`) and 
 
 ## How it works
 
-- The frontend `subscribe.html` sends a POST to `/api/subscribe` with JSON { plan, fname, lname, phone, email }.
-- `server.js` uses Nodemailer to send a plain-text confirmation email to the client and optionally notifies the business email.
+- `POST /api/subscribe` accepts JSON: `{ name, email, plan, message }`.
+- `server.js` uses Resend API to send one email to the client and one email to `BUSINESS_EMAIL`.
+- The API response includes `delivery.clientEmailSent` and `delivery.businessEmailSent`.
 
 ## Future improvements
 
@@ -40,5 +38,39 @@ This repository contains a static frontend (`index.html`, `subscribe.html`) and 
 
 ## Security
 
-- Keep SMTP credentials secret. Do NOT commit `.env` with real passwords.
-- For production, consider sending emails via a secure transactional provider or use app-specific passwords.
+- Keep API keys secret. Do NOT commit `.env` with real secrets.
+- For production, make sure `FROM_EMAIL` uses a domain verified in Resend.
+
+## Troubleshooting: "Where was `info@timepriority.lv` created?"
+
+This repository does **not** store mailbox provider credentials (cPanel, Hostinger, Google Workspace, etc.). It only stores:
+
+- sender identity variable: `FROM_EMAIL`
+- API key variable for Resend delivery: `RESEND_API_KEY`
+
+To find the mailbox provider where `info@timepriority.lv` was originally created, check:
+
+1. DNS records of `timepriority.lv` (MX records show incoming mail provider).
+2. Registrar/hosting control panel linked to the domain.
+3. Old invoices or billing emails (Hostinger, Namecheap, Zoho, Google Workspace, etc.).
+4. Browser password manager entries for `info@timepriority.lv`.
+
+### If your Hostinger subscription expired
+
+After renewing Hostinger, verify this checklist before testing the form again:
+
+1. Domain DNS is active and MX records are restored.
+2. Mailbox `info@timepriority.lv` exists and you can log in to webmail.
+3. In Render, `FROM_EMAIL=info@timepriority.lv` and `RESEND_API_KEY` are set.
+4. In Resend, the sending domain is verified (SPF/DKIM status is green).
+
+### If your domain holder/registrant data is outdated
+
+If you cannot add DNS records because ownership data is outdated, do this first:
+
+1. Update domain contact/holder data at the registrar (whois/contact profile).
+2. Confirm email/phone ownership requested by registrar (ICANN verification flow).
+3. Ensure nameservers are controlled by the same provider where you edit DNS.
+4. Only after this, add/restore SPF + DKIM + MX records required by your mail setup.
+
+Hostinger panel warnings like SPF/DKIM yellow status usually mean DNS records are missing in the currently active DNS zone.
