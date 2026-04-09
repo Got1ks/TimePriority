@@ -313,13 +313,12 @@
         return;
       }
 
-      // Prepare payload
+      // The production API expects exactly: name, email, plan, message.
       const payload = {
-        plan: document.getElementById('plan').value || '',
-        fname: f,
-        lname: l,
-        phone: p,
-        email: em
+        name: `${f} ${l}`.trim(),
+        email: em,
+        plan: params.get('plan') || '',
+        message: p
       };
 
       // POST to server (Node.js + Express) which sends confirmation email via Resend
