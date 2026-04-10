@@ -1,10 +1,7 @@
 /**
- * Production-ready server for TimePriority subscription API
- * - Accepts JSON POST /api/subscribe
- * - Sends email to client via SMTP (Nodemailer)
- * - Optionally notifies BUSINESS_EMAIL
- * - Restricts CORS to ALLOWED_ORIGINS env var (comma-separated)
- * - Always returns JSON (including 404)
+ * TimePriority API
+ * - GET /health
+ * - POST /api/subscribe
  */
 
 require('dotenv').config();
@@ -15,104 +12,116 @@ const { sendEmailResend } = require('./utils/sendEmailResend');
 
 const app = express();
 
-// Basic security headers
 app.use(helmet());
-
-// Parse JSON bodies
 app.use(express.json());
 
-// Configure CORS: read allowed origins from env var (fallback to known production domains)
-const configured = (process.env.ALLOWED_ORIGINS || '').trim();
-const rawOrigins = (configured ? configured.split(',') : ['https://timepriority.lv','https://www.timepriority.lv']).map(s => s.trim()).filter(Boolean);
-const corsOptions = {
-  origin: function(origin, callback){
-    // allow requests with no origin (e.g., server-to-server or curl)
-    if(!origin) return callback(null, true);
-    if(rawOrigins.length === 0){
-      // if not configured, deny cross-origin by default
-      return callback(new Error('CORS origin denied'));
-    }
-    if(rawOrigins.indexOf(origin) !== -1){
-      return callback(null, true);
-    } else {
-      return callback(new Error('CORS origin denied'));
-    }
-  }
-};
+const defaultAllowedOrigins = [
+  'https://timepriority.lv',
+  'https://www.timepriority.lv',
+];
+
+const allowedFromEnv = (process.env.ALLOWED_ORIGINS || '')
+  .split(',')
+  .map(v => v.trim())
+  .filter(Boolean);
+
+const allowedOrigins = Array.from(new Set([...defaultAllowedOrigins, ...allowedFromEnv]));
+
 app.use((req, res, next) => {
-  // wrap cors middleware to return JSON error on CORS failure
-  cors(corsOptions)(req, res, function(err){
-    if(err){
-      console.warn('CORS denied for origin:', req.headers.origin);
-      return res.status(403).json({ ok: false, error: 'CORS origin denied' });
-    }
-    next();
+  cors({
+    origin(origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('CORS origin denied'));
+    },
+  })(req, res, (err) => {
+    if (err) return res.status(403).json({ ok: false, error: 'CORS origin denied' });
+    return next();
   });
 });
 
-// Health check route - should be reachable and return JSON
-app.get('/health', (req, res) => {
-  console.log('/health ping from', req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress);
-  return res.json({ ok: true, status: 'ok' });
+app.get('/health', (_req, res) => {
+  return res.json({ ok: true });
 });
 
-
-// POST /api/subscribe
 app.post('/api/subscribe', async (req, res) => {
-  try {
-    console.log('/api/subscribe payload:', req.body);
-    const { plan, fname, lname, phone, email } = req.body || {};
-    if(!plan || !fname || !lname || !email) return res.status(400).json({ ok: false, error: 'Missing required fields' });
+  const body = req.body || {};
 
-    const subject = `TimePriority — Subscription received: ${plan}`;
-    const text = `Hello ${fname} ${lname},\n\n` +
-      `Thank you for subscribing to our ${plan} plan. We received your request and will contact you shortly to confirm details.\n\n` +
-      `Summary:\n` +
-      `Plan: ${plan}\n` +
-      `Name: ${fname} ${lname}\n` +
-      `Phone: ${phone || 'N/A'}\n` +
-      `Email: ${email}\n\n` +
-      `If you need immediate assistance, reply to this email or contact us via Telegram.`;
+  // New API contract
+  // {
+  //   name: string,
+  //   email: string,
+  //   plan: string,
+  //   message: string
+  // }
+  const name = typeof body.name === 'string' ? body.name.trim() : '';
+  const email = typeof body.email === 'string' ? body.email.trim() : '';
+  const plan = typeof body.plan === 'string' ? body.plan.trim() : '';
+  const message = typeof body.message === 'string' ? body.message.trim() : '';
 
-    const mailOptions = {
-      from: process.env.FROM_EMAIL || process.env.SMTP_USER,
-      to: email,
-      subject,
-      text,
-      // Uncomment and adjust to include an attachments array (e.g., PDF invoice)
-      // attachments: [ { filename: 'invoice.pdf', path: '/tmp/invoice.pdf' } ]
-    };
+  const missingFields = [];
+  if (!name) missingFields.push('name');
+  if (!email) missingFields.push('email');
+  if (!plan) missingFields.push('plan');
+  if (!message) missingFields.push('message');
 
-    // send to client via Resend API
-    console.log('Sending client email via Resend to', email);
-    try{
-      await sendEmailResend({ to: email, subject: mailOptions.subject, html: mailOptions.text.replace(/\n/g,'<br/>') });
-      console.log('Client email sent (Resend) to', email);
-    } catch(sendErr){
-      console.error('Email send failed (Resend):', sendErr && (sendErr.message || sendErr));
-      // Do not fail the request — return success to avoid losing leads
-    }
-
-    // notify business if configured (do not block client response on failure)
-    if(process.env.BUSINESS_EMAIL){
-      try{
-        await sendEmailResend({ to: process.env.BUSINESS_EMAIL, subject: `New subscription: ${plan} — ${fname} ${lname}`, html: `<pre>${JSON.stringify({ plan, fname, lname, email, phone }, null, 2)}</pre>` });
-        console.log('Admin notification sent to', process.env.BUSINESS_EMAIL);
-      } catch(err){
-        console.warn('Admin notification failed:', err && err.message);
-      }
-    }
-
-    return res.json({ ok: true, message: 'Pieteikums saņemts' });
-  } catch (err) {
-    console.error('Error /api/subscribe', err && err.message);
-    return res.status(500).json({ ok: false, error: 'Internal server error' });
+  if (missingFields.length > 0) {
+    return res.status(400).json({
+      ok: false,
+      error: `Missing required fields: ${missingFields.join(', ')}`,
+    });
   }
+
+  let clientEmailSent = false;
+  let businessEmailSent = false;
+
+  const clientSubject = `TimePriority — request received (${plan})`;
+  const clientHtml = `
+    <p>Hello, ${name}.</p>
+    <p>We received your request for <strong>${plan}</strong>.</p>
+    <p>Your message:</p>
+    <blockquote>${message}</blockquote>
+    <p>Thank you. Our team will contact you shortly.</p>
+  `;
+
+  const businessSubject = `New subscription request: ${plan}`;
+  const businessHtml = `
+    <h3>New TimePriority request</h3>
+    <p><strong>Name:</strong> ${name}</p>
+    <p><strong>Email:</strong> ${email}</p>
+    <p><strong>Plan:</strong> ${plan}</p>
+    <p><strong>Message:</strong></p>
+    <pre>${message}</pre>
+  `;
+
+  try {
+    await sendEmailResend({ to: email, subject: clientSubject, html: clientHtml });
+    clientEmailSent = true;
+  } catch (err) {
+    console.error('Client email send failed:', err && err.message ? err.message : err);
+  }
+
+  try {
+    if (process.env.BUSINESS_EMAIL) {
+      await sendEmailResend({ to: process.env.BUSINESS_EMAIL, subject: businessSubject, html: businessHtml });
+      businessEmailSent = true;
+    }
+  } catch (err) {
+    console.error('Business email send failed:', err && err.message ? err.message : err);
+  }
+
+  return res.json({
+    ok: true,
+    delivery: {
+      clientEmailSent,
+      businessEmailSent,
+    },
+  });
 });
 
-// JSON 404 handler
-app.use((req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
+app.use((_req, res) => res.status(404).json({ ok: false, error: 'Not found' }));
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`TimePriority API listening on port ${PORT}`));
-
+app.listen(PORT, () => {
+  console.log(`TimePriority API listening on port ${PORT}`);
+});
