@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Subscribe</title>
   <style>
-    body{font-family:Arial,Helvetica,sans-serif;background:#0b0b0d;color:#f1f1f1;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-    .card{background:#111;padding:24px;border-radius:12px;width:360px;box-shadow:0 6px 30px rgba(0,0,0,.6)}
+    body{font-family:Arial,Helvetica,sans-serif;background:#0b0b0d;color:#f1f1f1;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;padding:24px}
+    .card{position:relative;background:#111;padding:24px;border-radius:12px;width:360px;box-shadow:0 6px 30px rgba(0,0,0,.6);overflow:visible}
     h2{margin:0 0 10px}
   label{display:block;margin-top:8px;font-size:13px;color:#cfcfcf}
   input{width:100%;padding:10px;border-radius:8px;border:1px solid #2a2a2a;background:#0e0e0f;color:#fff;margin-top:6px}
@@ -22,6 +22,15 @@
   .btn{display:inline-block;margin-top:14px;padding:10px 14px;border-radius:8px;background:#d4af37;color:#0b0b0d;font-weight:700;text-decoration:none;border:none;cursor:pointer}
   .btn[disabled]{opacity:.5;cursor:not-allowed}
     .muted{font-size:13px;color:#b9b9bd;margin-top:8px}
+    .form-error{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;border:1px solid rgba(212,175,55,.18);background:rgba(37,18,18,.92);color:#f3d3d3;font-size:13px;line-height:1.5}
+    .loading-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(7,7,9,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility .28s ease;z-index:999}
+    .loading-overlay.active{opacity:1;visibility:visible;pointer-events:auto}
+    .loading-shell{width:100%;max-width:280px;text-align:center;padding:26px 22px;border-radius:18px;border:1px solid rgba(212,175,55,.18);background:linear-gradient(180deg, rgba(24,24,28,.96), rgba(12,12,15,.94));box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);transform:translateY(10px) scale(.985);transition:transform .32s ease}
+    .loading-overlay.active .loading-shell{transform:translateY(0) scale(1)}
+    .loading-spinner{width:52px;height:52px;margin:0 auto 18px;border-radius:50%;border:1px solid rgba(212,175,55,.14);border-top-color:#d4af37;border-right-color:rgba(255,255,255,.7);box-shadow:0 0 0 1px rgba(212,175,55,.04), 0 0 30px rgba(212,175,55,.08);animation:spin 1s linear infinite}
+    .loading-title{font-size:22px;font-family:Georgia,"Times New Roman",serif;letter-spacing:.02em;color:#f5f1e6}
+    .loading-subtitle{margin-top:10px;color:#c3c1bb;font-size:14px;line-height:1.5}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
@@ -54,9 +63,17 @@
       </div>
       <button class="btn" id="submitBtn" type="submit" disabled>Submit</button>
     </form>
+    <div id="formError" class="form-error" role="alert" aria-live="polite"></div>
     <div id="success" style="display:none;margin-top:12px">
       <div style="font-weight:700;color:#7df19b">Thank you — your subscription request has been received.</div>
       <div class="muted">We will contact you shortly.</div>
+    </div>
+    <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
+      <div class="loading-shell" role="status" aria-live="assertive">
+        <div class="loading-spinner" aria-hidden="true"></div>
+        <div class="loading-title" id="loadingTitle">Отправляем заявку</div>
+        <div class="loading-subtitle" id="loadingSubtitle">Пожалуйста, подождите несколько секунд</div>
+      </div>
     </div>
   </div>
 
@@ -74,6 +91,9 @@
         submit: 'Отправить',
         successTitle: 'Спасибо — ваша заявка принята.',
         successDesc: 'Мы свяжемся с вами в ближайшее время.',
+        loadingTitle: 'Отправляем заявку',
+        loadingSubtitle: 'Пожалуйста, подождите несколько секунд',
+        errorMessage: 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз или свяжитесь с нами в Telegram.',
         contractTitle: 'Договор-оферта о предоставлении услуг TimePriority SIA',
         contractText: `
           <p>1. Общие положения</p>
@@ -122,6 +142,9 @@
         submit: 'Sūtīt',
         successTitle: 'Paldies — jūsu pieteikums saņemts.',
         successDesc: 'Mēs ar jums sazināsimies drīzumā.',
+        loadingTitle: 'Отправляем заявку',
+        loadingSubtitle: 'Пожалуйста, подождите несколько секунд',
+        errorMessage: 'Neizdevās nosūtīt pieteikumu. Pārbaudiet datus un mēģiniet vēlreiz vai sazinieties ar mums Telegram.',
         contractTitle: 'Līgums un noteikumi',
         contractText: `
           <h3>TIMEPRIORITY SIA LIETOŠANAS NOTEIKUMI</h3>
@@ -226,6 +249,9 @@
         submit: 'Submit',
         successTitle: 'Thank you — your subscription request has been received.',
         successDesc: 'We will contact you shortly.',
+        loadingTitle: 'Отправляем заявку',
+        loadingSubtitle: 'Пожалуйста, подождите несколько секунд',
+        errorMessage: 'We could not send your request right now. Please verify your details and try again, or contact us on Telegram.',
         contractTitle: 'Agreement and Terms',
         contractText: `
           <p>1. General Provisions</p>
@@ -294,10 +320,43 @@
 
     const agree = document.getElementById('agree');
     const submitBtn = document.getElementById('submitBtn');
-    agree.addEventListener('change', ()=>{ submitBtn.disabled = !agree.checked; });
+    const form = document.getElementById('subForm');
+    const formError = document.getElementById('formError');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const loadingTitle = document.getElementById('loadingTitle');
+    const loadingSubtitle = document.getElementById('loadingSubtitle');
+    let isSubmitting = false;
 
-    document.getElementById('subForm').addEventListener('submit', async function(e){
+    function syncSubmitState() {
+      submitBtn.disabled = isSubmitting || !agree.checked;
+    }
+
+    function setLoading(isLoading) {
+      isSubmitting = isLoading;
+      loadingOverlay.classList.toggle('active', isLoading);
+      loadingOverlay.setAttribute('aria-hidden', String(!isLoading));
+      syncSubmitState();
+    }
+
+    function setError(message) {
+      if (!message) {
+        formError.style.display = 'none';
+        formError.textContent = '';
+        return;
+      }
+      formError.textContent = message;
+      formError.style.display = 'block';
+    }
+
+    loadingTitle.textContent = T.loadingTitle || 'Отправляем заявку';
+    loadingSubtitle.textContent = T.loadingSubtitle || 'Пожалуйста, подождите несколько секунд';
+    agree.addEventListener('change', syncSubmitState);
+    syncSubmitState();
+
+    form.addEventListener('submit', async function(e){
       e.preventDefault();
+      if(isSubmitting) return;
+      setError('');
       // basic validation
       const f = document.getElementById('fname').value.trim();
       const l = document.getElementById('lname').value.trim();
@@ -323,6 +382,8 @@
 
       // POST to server (Node.js + Express) which sends confirmation email via Resend
       try{
+        setLoading(true);
+        await new Promise(requestAnimationFrame);
         const resp = await fetch(`${API_BASE}/api/subscribe`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -347,16 +408,14 @@
           throw new Error(dataObj.message || 'Email delivery failed');
         }
         console.log('Subscription response:', dataObj || {});
-        document.getElementById('subForm').style.display='none';
+        form.style.display='none';
         document.getElementById('success').style.display='block';
       }catch(err){
         console.error('Subscribe request failed', err);
-        const msg = lang==='ru'
-          ? `Ошибка отправки: ${err.message}. Проверьте данные или свяжитесь с нами в Telegram.`
-          : (lang==='lv'
-            ? `Nosūtīšanas kļūda: ${err.message}. Pārbaudiet datus vai sazinieties ar mums Telegram.`
-            : `Submission failed: ${err.message}. Please verify data or contact us on Telegram.`);
-        alert(msg);
+        const details = err && err.message ? ` ${err.message}` : '';
+        setError((T.errorMessage || 'Unable to send your request right now.') + details);
+      }finally{
+        setLoading(false);
       }
     });
   </script>
