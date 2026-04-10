@@ -325,20 +325,9 @@
     document.getElementById('successDesc').innerText = T.successDesc;
     document.getElementById('successPlanLabel').innerText = T.successPlanLabel || 'Selected plan';
 
-    // set plan value (and translate known plan names if needed)
+    // set plan value
     const params = new URLSearchParams(location.search);
     let plan = params.get('plan') || '';
-    // map English plan slugs to translated names when necessary
-    if(plan){
-      // attempt to translate common names
-      const map = {
-        'Basic Priority': {'ru':'Basic Priority','lv':'Pamata prioritāte','en':'Basic Priority'},
-        'Prime Priority': {'ru':'Prime Priority','lv':'Prime prioritāte','en':'Prime Priority'},
-        'Exclusive Priority': {'ru':'Exclusive Priority','lv':'Ekskluzīvā prioritāte','en':'Exclusive Priority'}
-      };
-      const mapped = map[plan];
-      if(mapped && mapped[lang]) plan = mapped[lang];
-    }
     document.getElementById('plan').value = plan;
     document.getElementById('successPlanValue').innerText = plan || (params.get('plan') || '');
 
