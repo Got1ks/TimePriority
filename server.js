@@ -82,8 +82,9 @@ app.post('/api/subscribe', async (req, res) => {
       subject: `TimePriority - pieteikums saņemts (${plan})`,
       html: `
         <p>Labdien, ${name}.</p>
-        <p>Mēs saņēmām jūsu pieteikumu plānam <strong>${plan}</strong>.</p>
-        <p>Pēc rēķina apmaksas ar jums sazināsies mūsu aģents.</p>
+        <p>Esam saņēmuši jūsu pieteikumu plānam <strong>${plan}</strong>.</p>
+        <p>Lūdzam apmaksāt rēķinu.</p>
+        <p>Pēc tā apmaksas mūsu aģents sazināsies ar jums uz norādīto tālruņa numuru.</p>
       `,
     },
     ru: {
@@ -91,15 +92,17 @@ app.post('/api/subscribe', async (req, res) => {
       html: `
         <p>Здравствуйте, ${name}.</p>
         <p>Мы получили вашу заявку на план <strong>${plan}</strong>.</p>
-        <p>После оплаты счета с вами свяжется наш агент.</p>
+        <p>Пожалуйста, оплатите счет.</p>
+        <p>После его оплаты наш агент свяжется с вами по указанному номеру телефона.</p>
       `,
     },
     en: {
       subject: `TimePriority - request received (${plan})`,
       html: `
         <p>Hello, ${name}.</p>
-        <p>We received your request for <strong>${plan}</strong>.</p>
-        <p>After the invoice is paid, our agent will contact you.</p>
+        <p>We have received your request for <strong>${plan}</strong>.</p>
+        <p>Please pay the invoice.</p>
+        <p>Once payment has been received, our agent will contact you using the phone number you provided.</p>
       `,
     },
   };
