@@ -58,6 +58,8 @@ app.post('/api/subscribe', async (req, res) => {
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const plan = typeof body.plan === 'string' ? body.plan.trim() : '';
   const message = typeof body.message === 'string' ? body.message.trim() : '';
+  const requestedLanguage = typeof body.language === 'string' ? body.language.trim().toLowerCase() : '';
+  const language = ['lv', 'ru', 'en'].includes(requestedLanguage) ? requestedLanguage : 'lv';
 
   const missingFields = [];
   if (!name) missingFields.push('name');
@@ -75,12 +77,35 @@ app.post('/api/subscribe', async (req, res) => {
   let clientEmailSent = false;
   let businessEmailSent = false;
 
-  const clientSubject = `TimePriority — request received (${plan})`;
-  const clientHtml = `
-    <p>Hello, ${name}.</p>
-    <p>We received your request for <strong>${plan}</strong>.</p>
-    <p>Thank you. After the invoice is paid, our agent will contact you.</p>
-  `;
+  const clientEmailContent = {
+    lv: {
+      subject: `TimePriority - pieteikums saņemts (${plan})`,
+      html: `
+        <p>Labdien, ${name}.</p>
+        <p>Mēs saņēmām jūsu pieteikumu plānam <strong>${plan}</strong>.</p>
+        <p>Pēc rēķina apmaksas ar jums sazināsies mūsu aģents.</p>
+      `,
+    },
+    ru: {
+      subject: `TimePriority - заявка получена (${plan})`,
+      html: `
+        <p>Здравствуйте, ${name}.</p>
+        <p>Мы получили вашу заявку на план <strong>${plan}</strong>.</p>
+        <p>После оплаты счета с вами свяжется наш агент.</p>
+      `,
+    },
+    en: {
+      subject: `TimePriority - request received (${plan})`,
+      html: `
+        <p>Hello, ${name}.</p>
+        <p>We received your request for <strong>${plan}</strong>.</p>
+        <p>After the invoice is paid, our agent will contact you.</p>
+      `,
+    },
+  };
+
+  const clientSubject = clientEmailContent[language].subject;
+  const clientHtml = clientEmailContent[language].html;
 
   const businessSubject = `New subscription request: ${plan}`;
   const businessHtml = `

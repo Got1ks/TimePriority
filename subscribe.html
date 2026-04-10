@@ -390,7 +390,8 @@
         name: `${f} ${l}`.trim(),
         email: em,
         plan: params.get('plan') || '',
-        message: p
+        message: p,
+        language: lang
       };
 
       // POST to server (Node.js + Express) which sends confirmation email via Resend
