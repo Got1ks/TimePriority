@@ -79,9 +79,7 @@ app.post('/api/subscribe', async (req, res) => {
   const clientHtml = `
     <p>Hello, ${name}.</p>
     <p>We received your request for <strong>${plan}</strong>.</p>
-    <p>Your message:</p>
-    <blockquote>${message}</blockquote>
-    <p>Thank you. Our team will contact you shortly.</p>
+    <p>Thank you. After the invoice is paid, our agent will contact you.</p>
   `;
 
   const businessSubject = `New subscription request: ${plan}`;
