@@ -23,6 +23,15 @@
   .btn[disabled]{opacity:.5;cursor:not-allowed}
     .muted{font-size:13px;color:#b9b9bd;margin-top:8px}
     .form-error{display:none;margin-top:12px;padding:12px 14px;border-radius:10px;border:1px solid rgba(212,175,55,.18);background:rgba(37,18,18,.92);color:#f3d3d3;font-size:13px;line-height:1.5}
+    .success-state{display:none;margin-top:16px;padding:24px 20px;border-radius:18px;border:1px solid rgba(212,175,55,.2);background:radial-gradient(circle at top, rgba(212,175,55,.12), transparent 45%),linear-gradient(180deg, rgba(21,21,25,.98), rgba(11,11,14,.98));box-shadow:0 20px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04)}
+    .success-mark{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin-bottom:18px;background:radial-gradient(circle at 30% 30%, rgba(212,175,55,.3), rgba(212,175,55,.08));border:1px solid rgba(212,175,55,.28);box-shadow:0 0 30px rgba(212,175,55,.12)}
+    .success-mark::before{content:"";width:18px;height:10px;border-left:2px solid #d4af37;border-bottom:2px solid #d4af37;transform:rotate(-45deg);margin-top:-2px}
+    .success-eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:#d4af37;margin-bottom:10px}
+    .success-title{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:28px;line-height:1.15;color:#f5f1e6}
+    .success-desc{margin-top:12px;color:#c9c6bd;font-size:14px;line-height:1.6}
+    .success-plan{margin-top:18px;display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 14px;border-radius:999px;border:1px solid rgba(212,175,55,.16);background:rgba(255,255,255,.02)}
+    .success-plan-label{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9d9686}
+    .success-plan-value{color:#f3e5b1;font-size:14px;font-weight:700}
     .loading-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(7,7,9,.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .28s ease,visibility .28s ease;z-index:999}
     .loading-overlay.active{opacity:1;visibility:visible;pointer-events:auto}
     .loading-shell{width:100%;max-width:280px;text-align:center;padding:26px 22px;border-radius:18px;border:1px solid rgba(212,175,55,.18);background:linear-gradient(180deg, rgba(24,24,28,.96), rgba(12,12,15,.94));box-shadow:0 20px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);transform:translateY(10px) scale(.985);transition:transform .32s ease}
@@ -64,9 +73,15 @@
       <button class="btn" id="submitBtn" type="submit" disabled>Submit</button>
     </form>
     <div id="formError" class="form-error" role="alert" aria-live="polite"></div>
-    <div id="success" style="display:none;margin-top:12px">
-      <div style="font-weight:700;color:#7df19b">Thank you — your subscription request has been received.</div>
-      <div class="muted">We will contact you shortly.</div>
+    <div id="success" class="success-state">
+      <div class="success-mark" aria-hidden="true"></div>
+      <div class="success-eyebrow" id="successEyebrow">Request received</div>
+      <h3 class="success-title" id="successTitle">Thank you — your subscription request has been received.</h3>
+      <div class="success-desc" id="successDesc">We will contact you shortly.</div>
+      <div class="success-plan">
+        <span class="success-plan-label" id="successPlanLabel">Selected plan</span>
+        <span class="success-plan-value" id="successPlanValue"></span>
+      </div>
     </div>
     <div id="loadingOverlay" class="loading-overlay" aria-hidden="true">
       <div class="loading-shell" role="status" aria-live="assertive">
@@ -89,8 +104,10 @@
         email: 'E-mail',
         agreeText: 'Я согласен с условиями и договором',
         submit: 'Отправить',
+        successEyebrow: 'Заявка принята',
         successTitle: 'Спасибо — ваша заявка принята.',
         successDesc: 'Мы свяжемся с вами в ближайшее время.',
+        successPlanLabel: 'Выбранный план',
         loadingTitle: 'Отправляем заявку',
         loadingSubtitle: 'Пожалуйста, подождите несколько секунд',
         errorMessage: 'Не удалось отправить заявку. Проверьте данные и попробуйте ещё раз или свяжитесь с нами в Telegram.',
@@ -140,8 +157,10 @@
         email: 'E-pasts',
         agreeText: 'Es piekrītu noteikumiem un līgumam',
         submit: 'Sūtīt',
+        successEyebrow: 'Pieteikums saņemts',
         successTitle: 'Paldies — jūsu pieteikums saņemts.',
         successDesc: 'Mēs ar jums sazināsimies drīzumā.',
+        successPlanLabel: 'Izvēlētais plāns',
         loadingTitle: 'Nosūtām pieteikumu',
         loadingSubtitle: 'Lūdzu, uzgaidiet dažas sekundes',
         errorMessage: 'Neizdevās nosūtīt pieteikumu. Pārbaudiet datus un mēģiniet vēlreiz vai sazinieties ar mums Telegram.',
@@ -247,8 +266,10 @@
         email: 'E-mail',
         agreeText: 'I agree to the terms and contract',
         submit: 'Submit',
+        successEyebrow: 'Request received',
         successTitle: 'Thank you — your subscription request has been received.',
         successDesc: 'We will contact you shortly.',
+        successPlanLabel: 'Selected plan',
         loadingTitle: 'Sending your request',
         loadingSubtitle: 'Please wait a few seconds',
         errorMessage: 'We could not send your request right now. Please verify your details and try again, or contact us on Telegram.',
@@ -299,8 +320,10 @@
     const agreeTextEl = document.querySelector('.terms .agree-text');
     if(agreeTextEl) agreeTextEl.textContent = T.agreeText;
     document.getElementById('submitBtn').innerText = T.submit;
-    document.getElementById('success').querySelector('div').innerText = T.successTitle;
-    document.getElementById('success').querySelector('.muted').innerText = T.successDesc;
+    document.getElementById('successEyebrow').innerText = T.successEyebrow || 'Request received';
+    document.getElementById('successTitle').innerText = T.successTitle;
+    document.getElementById('successDesc').innerText = T.successDesc;
+    document.getElementById('successPlanLabel').innerText = T.successPlanLabel || 'Selected plan';
 
     // set plan value (and translate known plan names if needed)
     const params = new URLSearchParams(location.search);
@@ -317,6 +340,7 @@
       if(mapped && mapped[lang]) plan = mapped[lang];
     }
     document.getElementById('plan').value = plan;
+    document.getElementById('successPlanValue').innerText = plan || (params.get('plan') || '');
 
     const agree = document.getElementById('agree');
     const submitBtn = document.getElementById('submitBtn');
